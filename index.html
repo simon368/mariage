@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8">
+		<meta name="viewport" content="width=device-width" />
+    <title>Cérémonie de mariage Jane & Quentin</title>
+    <style>
+    :root {
+        --primary-color: #483434;
+        --accent-color: #eed6c4;
+        --background-color: #fff3e4;
+        --font-family: Georgia, 'Times New Roman', Times, serif;
+    }
+
+    html, body {
+      box-sizing: border-box;
+      height: 100%;
+      padding: 0;
+      margin: 0;
+    }
+
+    body {
+      font-family: var(--font-family);
+      color: var(--primary-color);
+      background-color: var(--background-color);
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 1rem;
+    }
+
+    header {
+      font-size: 2rem;
+    }
+
+    strong {
+      font-weight: normal;
+      background-color: var(--accent-color);
+      border-radius: 0.25rem;
+      padding: 0 0.25rem;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    main {
+      margin: 1rem 0;
+    }
+
+    img {
+      object-fit: cover;
+      box-sizing: border-box;
+      width: 100%;
+      border: 3px solid var(--accent-color);
+    }
+
+    p {
+      font-size: 1.2rem;
+    }
+
+    footer {
+      text-align: center;
+      padding-bottom: 1rem;
+    }
+
+    .align-right {
+      text-align: right;
+    }
+
+    .italic {
+      font-style: italic;
+    }
+
+    .margin-right {
+      margin-top: -0.5rem;
+      margin-right: 2.5rem;
+    }
+    </style>
+  </head>
+  <body>
+    <header>
+      <span>Cérémonie de mariage <strong>Jane & Quentin</strong></span>
+    </header>
+    <main>
+      <p><strong>Bonjour</strong> ou peut-être bonsoir,</p>
+      <p id="status"></p>
+      <p>Écrivez-nous un <a href="mailto:mariage@3we.co">petit mot</a>, on vous lira depuis <strong>la Chine</strong>.</p>
+      <img src="mariage.jpg" />
+      <p class="align-right">Au plaisir de vous <strong>revoir</strong>,</p><p class="align-right italic margin-right">Jane & Quentin</p>
+    </main>
+    <footer>
+      <time id="local-time"></time>
+    </footer>
+    <script>
+      const $status = document.getElementById('status');
+      const $localTime = document.getElementById('local-time');
+
+      const now = Date.now();
+      const weddingStart = new Date("2023-11-27T18:00:00.000+08:00");
+      const weddingEnd = new Date("2023-11-29T12:00:00.000+08:00");
+      
+      const endedStatus = "La célébration du mariage est <strong>terminée</strong>. Merci d'être passé-e-s, nous partagerons avec vous quelques souvenirs à notre retour.";
+      const startedStatus = "La célébration du mariage a <strong>commencé</strong>, suivez l'évènement en direct depuis <a target='_blank' href='https://live.douyin.com/301188511232'>cette plateforme de streaming chinoise</a>.";
+
+      const inSecondMs = 1000;
+
+      if (now > weddingEnd) { // has ended
+        $status.innerHTML = endedStatus;
+      } else {
+        // local time
+        const updateLocalTime = () => {
+          $localTime.innerHTML = "Date et heure locales : <strong>" + new Date().toLocaleString("fr-CH", { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute:'2-digit', hour12: false, timeZone: 'Asia/Shanghai' }) + "</strong>";
+        }
+        
+        updateLocalTime();
+        const countdownTimer = setInterval(() => updateLocalTime(), inSecondMs);
+
+
+        let seconds = Math.floor((weddingStart - now) / inSecondMs);
+
+        if (seconds > 0) { // countdown
+          const inMinuteSeconds = 60;
+          const inHourSeconds =  inMinuteSeconds * 60;
+          const inDaySeconds = inHourSeconds * 24;
+
+          const isZero = value => value === 0;
+          const isMultiple = value => value > 1;
+
+          const showIfNonzero = (value, content) => isZero(value) ? "" : content || value;
+          const showIfMultiple = (value, content) => isMultiple(value) ? content : "";
+
+          const pluralize = (value) => showIfMultiple(value, "s");
+
+          updateTimer = () => {
+            const timerUnits = ['jour', 'heure', 'minute', 'seconde'];
+
+            const hoursLeft   = seconds % inDaySeconds;
+            const minutesLeft = seconds % inHourSeconds;
+
+            const timerValues = [
+              Math.floor(seconds / inDaySeconds),
+              Math.floor(hoursLeft / inHourSeconds),
+              Math.floor(minutesLeft / inMinuteSeconds),
+              seconds % inMinuteSeconds
+            ];
+
+            const [lastLabel, ...labels] = timerValues.map((value, index) => showIfNonzero(value, value + "&nbsp;" + timerUnits[index] + pluralize(value))).filter(Boolean).reverse();
+
+            if (seconds == 0) {
+              clearInterval(countdownTimer);
+              $status.innerHTML = startedStatus;
+            } else {
+              $status.innerHTML = "La célébration du mariage commence dans <strong>" + labels.reverse().join(", ") + (labels.length > 1 ? " et " : "") + lastLabel + "</strong>. <a target='_blank' href='https://calendar.google.com/calendar/u/0/r/eventedit/copy/MGs5b3JmdmJvZXJzYWFxbGVidWhnODllNHYgZmFtaWx5MTE3Mjk2ODkwOTI4NTEzNDE3MTlAZw/cXVlbnRpbndhbHRlci5jb21AZ21haWwuY29t'>Ajouter l'évènement à votre calendrier</a>";
+              seconds--;
+            }
+          }
+
+          updateTimer();
+          const countdownTimer = setInterval(() => updateTimer(), inSecondMs);
+        } else {
+          $status.innerHTML = startedStatus;
+        }
+      }
+    </script>
+  </body>
+</html>
